@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدير المهام والمشاريع الشخصية الذكي</title>
-    <meta name="description" content="تطبيق ويب متكامل لإدارة مهامك اليومية مع تحديد الأولويات والتصنيفات والحفظ المحلي.">
+    <meta name="description" content="تطبيق ويب متكامل لإدارة مهامك اليومية مع تحديد الأولويات والتصنيفات والنسخ الاحتياطي والحفظ المحلي.">
     
     <!-- بيانات السيو المهيكلة (Schema Markup) -->
     <script type="application/ld+json">
@@ -19,7 +19,7 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "description": "تطبيق ويب لتنظيم وإدارة المهام مع تصنيفات وأولويات."
+      "description": "تطبيق ويب لتنظيم وإدارة المهام مع تصنيفات وأولويات ونسخ احتياطي."
     }
     </script>
 
@@ -35,7 +35,7 @@
     <!-- الهيدر -->
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 text-center">
         <h1 class="text-2xl font-bold text-indigo-400">مدير المهام والمشاريع الاحترافي 📋</h1>
-        <p class="text-xs text-slate-400 mt-1">نظم مهامك حسب الأولويات والتصنيفات بدقة عالية</p>
+        <p class="text-xs text-slate-400 mt-1">نظم مهامك، تحكم بأولوياتك، واحفظ نسخة احتياطية لبياناتك</p>
     </header>
 
     <!-- المحتوى الرئيسي -->
@@ -73,7 +73,21 @@
             </div>
         </div>
 
-        <!-- قائمة المهام والتحكم -->
+        <!-- أداة النسخ الاحتياطي والتحكم بالبيانات -->
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row justify-between items-center gap-3">
+            <span class="text-xs text-slate-300 font-semibold">إدارة البيانات والنسخ الاحتياطي:</span>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="exportData()" class="flex-1 sm:flex-none bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-emerald-500 transition">
+                    تصدير النسخة (Backup) 📥
+                </button>
+                <label class="flex-1 sm:flex-none bg-amber-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-amber-500 transition cursor-pointer text-center">
+                    استعادة (Restore) 📤
+                    <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+
+        <!-- قائمة المهام والفلترة -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-slate-700 pb-3">
                 <h3 class="font-bold text-sm text-slate-300">المهام الحالية (<span id="taskCount">0</span>)</h3>
@@ -95,10 +109,10 @@
 
     <!-- الفوتر -->
     <footer class="bg-slate-800 border-t border-slate-700 py-4 text-center text-xs text-slate-500">
-        جميع المهام والتصنيفات تُحفظ محلياً بذكاء في متصفحك.
+        جميع المهام والتصنيفات تُحفظ محلياً وتدعم التصدير والاستيراد الآمن.
     </footer>
 
-    <!-- سكريبت إدارة المهام المطورة -->
+    <!-- سكريبت إدارة المهام والتصدير والترتيب -->
     <script>
         let tasks = [];
         let currentFilter = 'all';
@@ -164,6 +178,44 @@
             renderTasks();
         }
 
+        // ميزة تصدير البيانات كملف JSON
+        function exportData() {
+            if (tasks.length === 0) {
+                alert('لا توجد مهام لتصديرها!');
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "my_tasks_backup.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // ميزة استيراد البيانات من ملف JSON
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedTasks = JSON.parse(e.target.result);
+                    if (Array.isArray(importedTasks)) {
+                        tasks = importedTasks;
+                        saveAndRender();
+                        alert('تم استعادة البيانات والمهام بنجاح! 🎉');
+                    } else {
+                        alert('ملف غير صالح!');
+                    }
+                } catch (err) {
+                    alert('حدث خطأ أثناء قراءة الملف!');
+                }
+            };
+            reader.readAsText(file);
+        }
+
         function renderTasks() {
             const taskList = document.getElementById('taskList');
             const taskCount = document.getElementById('taskCount');
@@ -184,7 +236,6 @@
             }
 
             filteredTasks.forEach(task => {
-                // تحديد ألوان الشارات حسب الأولوية
                 let priorityColor = "bg-yellow-950 text-yellow-300 border-yellow-800";
                 if (task.priority === 'عالية') priorityColor = "bg-red-950 text-red-300 border-red-800";
                 if (task.priority === 'منخفضة') priorityColor = "bg-emerald-950 text-emerald-300 border-emerald-800";
