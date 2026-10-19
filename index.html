@@ -3,26 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدير المهام والمشاريع الشخصية الذكي</title>
-    <meta name="description" content="تطبيق ويب متكامل لإدارة مهامك اليومية مع تحديد الأولويات والتصنيفات والنسخ الاحتياطي عبر الملفات النصية.">
+    <title>مدير المهام السحابي الاحترافي</title>
+    <meta name="description" content="تطبيق ويب سحابي لإدارة المهام والمشاريع مع مزامنة فورية وقاعدة بيانات Supabase.">
     
-    <!-- بيانات السيو المهيكلة (Schema Markup) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "مدير المهام الشخصية",
-      "operatingSystem": "All",
-      "applicationCategory": "ProductivityApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "تطبيق ويب لتنظيم وإدارة المهام مع تصنيفات وأولويات ونسخ احتياطي بملفات نصية."
-    }
-    </script>
-
+    <!-- تحميل مكتبة Supabase للاتصال السحابي -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- تحميل Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
@@ -34,8 +19,8 @@
 
     <!-- الهيدر -->
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 text-center">
-        <h1 class="text-2xl font-bold text-indigo-400">مدير المهام والمشاريع الاحترافي 📋</h1>
-        <p class="text-xs text-slate-400 mt-1">نظم مهامك، تحكم بأولوياتك، واحفظ نسخة احتياطية بملفات آمنة</p>
+        <h1 class="text-2xl font-bold text-indigo-400">مدير المهام السحابي ☁️📋</h1>
+        <p class="text-xs text-slate-400 mt-1">متصل مباشرة بقاعدة البيانات السحابية (Supabase)</p>
     </header>
 
     <!-- المحتوى الرئيسي -->
@@ -43,7 +28,7 @@
         
         <!-- صندوق إضافة مهمة جديدة -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 space-y-4 shadow-lg">
-            <h2 class="font-bold text-sm text-indigo-300">إضافة مهمة أو مشروع جديد</h2>
+            <h2 class="font-bold text-sm text-indigo-300">إضافة مهمة سحابية جديدة</h2>
             <div class="space-y-3">
                 <input type="text" id="taskInput" placeholder="اكتب عنوان المهمة..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 
@@ -68,24 +53,7 @@
                 </div>
 
                 <button onclick="addTask()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl hover:bg-indigo-500 transition text-sm shadow-md">
-                    إضافة المهمة للقائمة ➕
-                </button>
-            </div>
-        </div>
-
-        <!-- أداة النسخ الاحتياطي بالملفات النصية (.txt) المتوافقة مع الموبايل -->
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row justify-between items-center gap-3">
-            <span class="text-xs text-slate-300 font-semibold">النسخ الاحتياطي عبر الملفات:</span>
-            
-            <!-- حقل إدخال مخفي يقبل أي ملف نصي -->
-            <input type="file" id="importFile" accept=".txt, .json" onchange="importData(event)" class="hidden">
-
-            <div class="flex gap-2 w-full sm:w-auto">
-                <button onclick="exportData()" class="flex-1 sm:flex-none bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-emerald-500 transition">
-                    تحميل ملف النسخة (Backup) 📥
-                </button>
-                <button onclick="triggerImport()" class="flex-1 sm:flex-none bg-amber-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-amber-500 transition">
-                    استعادة من ملف (Restore) 📤
+                    إضافة للسحابة ☁️➕
                 </button>
             </div>
         </div>
@@ -93,7 +61,7 @@
         <!-- قائمة المهام والفلترة -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-slate-700 pb-3">
-                <h3 class="font-bold text-sm text-slate-300">المهام الحالية (<span id="taskCount">0</span>)</h3>
+                <h3 class="font-bold text-sm text-slate-300">المهام السحابية (<span id="taskCount">0</span>)</h3>
                 
                 <!-- أزرار الفلترة -->
                 <div class="flex gap-1 bg-slate-900 p-1 rounded-xl text-xs">
@@ -104,7 +72,8 @@
             </div>
 
             <div id="taskList" class="space-y-3 max-h-96 overflow-y-auto">
-                <!-- ستظهر المهام هنا برمجياً -->
+                <!-- ستظهر المهام هنا برمجياً من السحابة -->
+                <p id="loadingMsg" class="text-center text-xs text-slate-400 py-6">جاري الاتصال بالسحابة وجلب المهام... ⏳</p>
             </div>
         </div>
 
@@ -112,28 +81,48 @@
 
     <!-- الفوتر -->
     <footer class="bg-slate-800 border-t border-slate-700 py-4 text-center text-xs text-slate-500">
-        نسخ احتياطي احترافي عبر ملفات نصية (.txt) قابلة للاختيار بسهولة تامة.
+        بياناتك محمية ومخزنة سحابياً عبر قاعدة بيانات Supabase.
     </footer>
 
-    <!-- سكريبت إدارة المهام والملفات -->
+    <!-- سكريبت الاتصال السحابي وإدارة المهام -->
     <script>
+        // ----------------------------------------------------
+        // ضع بيانات مشروعك السحابي هنا بداخل علامات التنصيص:
+        const SUPABASE_URL = 'https://nndcnilwosxpqbodfpcj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZGNuaWx3b3N4cHFib2RmcGNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzYwOTMsImV4cCI6MjEwNzk1MjA5M30.oDzj6K6Nz8FVIYolYJd5ExuJD4TV4ovVQQrIJ6M3L1s';
+        // ----------------------------------------------------
+
+        // تهيئة اتصال Supabase
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let tasks = [];
         let currentFilter = 'all';
 
+        // تحميل المهام من السحابة فور فتح الصفحة
         window.onload = function() {
-            const savedTasks = localStorage.getItem('pro_manager_tasks');
-            if (savedTasks) {
-                tasks = JSON.parse(savedTasks);
-                renderTasks();
-            }
+            fetchTasksFromCloud();
         };
 
-        function saveAndRender() {
-            localStorage.setItem('pro_manager_tasks', JSON.stringify(tasks));
+        // جلب المهام من قاعدة البيانات السحابية
+        async function fetchTasksFromCloud() {
+            const { data, error } = await _supabase
+                .from('tasks')
+                .select('*')
+                .order('inserted_at', { ascending: false });
+
+            if (error) {
+                console.error('خطأ في جلب البيانات:', error.message);
+                document.getElementById('taskList').innerHTML = '<p class="text-center text-xs text-red-400 py-6">فشل الاتصال بالسحابة! تأكد من صحة الرابط والمفتاح.</p>';
+                return;
+            }
+
+            tasks = data || [];
             renderTasks();
         }
 
-        function addTask() {
+        // إضافة مهمة جديدة مباشرة إلى السحابة
+        async function addTask() {
             const input = document.getElementById('taskInput');
             const category = document.getElementById('taskCategory').value;
             const priority = document.getElementById('taskPriority').value;
@@ -144,32 +133,46 @@
                 return;
             }
 
-            const newTask = {
-                id: Date.now(),
-                text: text,
-                category: category,
-                priority: priority,
-                completed: false
-            };
+            const { data, error } = await _supabase
+                .from('tasks')
+                .insert([{ text, category, priority, completed: false }])
+                .select();
 
-            tasks.push(newTask);
+            if (error) {
+                alert('فشل حفظ المهمة في السحابة: ' + error.message);
+                return;
+            }
+
             input.value = '';
-            saveAndRender();
+            fetchTasksFromCloud(); // إعادة تحميل القائمة من السحابة لتحديث العرض
         }
 
-        function toggleTask(id) {
-            tasks = tasks.map(task => {
-                if (task.id === id) {
-                    return { ...task, completed: !task.completed };
-                }
-                return task;
-            });
-            saveAndRender();
+        // تغيير حالة المهمة (مكتملة أو قيد التنفيذ) في السحابة
+        async function toggleTask(id, currentStatus) {
+            const { error } = await _supabase
+                .from('tasks')
+                .update({ completed: !currentStatus })
+                .eq('id', id);
+
+            if (error) {
+                alert('حدث خطأ أثناء التحديث!');
+                return;
+            }
+            fetchTasksFromCloud();
         }
 
-        function deleteTask(id) {
-            tasks = tasks.filter(task => task.id !== id);
-            saveAndRender();
+        // حذف مهمة من السحابة
+        async function deleteTask(id) {
+            const { error } = await _supabase
+                .from('tasks')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert('حدث خطأ أثناء الحذف!');
+                return;
+            }
+            fetchTasksFromCloud();
         }
 
         function setFilter(filter) {
@@ -179,50 +182,6 @@
             });
             document.getElementById(`filter-${filter}`).className = "px-3 py-1.5 rounded-lg bg-indigo-600 text-white transition";
             renderTasks();
-        }
-
-        // تصدير البيانات كملف نصي (.txt) متاح للضغط عليه في كل الهواتف
-        function exportData() {
-            if (tasks.length === 0) {
-                alert('لا توجد مهام لتصديرها!');
-                return;
-            }
-            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "my_tasks_backup.txt");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        // فتح نافذة اختيار الملفات
-        function triggerImport() {
-            document.getElementById('importFile').click();
-        }
-
-        // استعادة البيانات من الملف النصي المختار
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedTasks = JSON.parse(e.target.result);
-                    if (Array.isArray(importedTasks)) {
-                        tasks = importedTasks;
-                        saveAndRender();
-                        alert('تم استعادة البيانات والمهام بنجاح من الملف! 🎉');
-                    } else {
-                        alert('محتوى الملف غير صالح!');
-                    }
-                } catch (err) {
-                    alert('حدث خطأ أثناء قراءة الملف، تأكد أنه ملف نسخة احتياطية صحيح.');
-                }
-                event.target.value = '';
-            };
-            reader.readAsText(file);
         }
 
         function renderTasks() {
@@ -240,7 +199,7 @@
             taskList.innerHTML = '';
 
             if (filteredTasks.length === 0) {
-                taskList.innerHTML = '<p class="text-center text-xs text-slate-500 py-8">لا توجد مهام مطابقة للعرض حالياً.</p>';
+                taskList.innerHTML = '<p class="text-center text-xs text-slate-500 py-8">لا توجد مهام سحابية مطابقة للعرض حالياً.</p>';
                 return;
             }
 
@@ -254,7 +213,7 @@
                 
                 div.innerHTML = `
                     <div class="flex items-start gap-3 overflow-hidden w-full">
-                        <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id})" class="mt-1 w-4 h-4 accent-indigo-500 cursor-pointer">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id}, ${task.completed})" class="mt-1 w-4 h-4 accent-indigo-500 cursor-pointer">
                         <div class="space-y-1 w-full">
                             <span class="text-sm text-slate-100 block break-words ${task.completed ? 'line-through text-slate-500' : ''}">${task.text}</span>
                             <div class="flex gap-2 text-[10px]">
