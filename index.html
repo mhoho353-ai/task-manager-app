@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدير المهام والمشاريع الشخصية الذكي</title>
-    <meta name="description" content="تطبيق ويب متكامل لإدارة مهامك اليومية مع تحديد الأولويات والتصنيفات والنسخ الاحتياطي والحفظ المحلي.">
+    <meta name="description" content="تطبيق ويب متكامل لإدارة مهامك اليومية مع تحديد الأولويات والتصنيفات والنسخ الاحتياطي عبر الملفات النصية.">
     
     <!-- بيانات السيو المهيكلة (Schema Markup) -->
     <script type="application/ld+json">
@@ -19,7 +19,7 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "description": "تطبيق ويب لتنظيم وإدارة المهام مع تصنيفات وأولويات ونسخ احتياطي."
+      "description": "تطبيق ويب لتنظيم وإدارة المهام مع تصنيفات وأولويات ونسخ احتياطي بملفات نصية."
     }
     </script>
 
@@ -35,7 +35,7 @@
     <!-- الهيدر -->
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 text-center">
         <h1 class="text-2xl font-bold text-indigo-400">مدير المهام والمشاريع الاحترافي 📋</h1>
-        <p class="text-xs text-slate-400 mt-1">نظم مهامك، تحكم بأولوياتك، واحفظ نسخة احتياطية لبياناتك</p>
+        <p class="text-xs text-slate-400 mt-1">نظم مهامك، تحكم بأولوياتك، واحفظ نسخة احتياطية بملفات آمنة</p>
     </header>
 
     <!-- المحتوى الرئيسي -->
@@ -73,19 +73,19 @@
             </div>
         </div>
 
-        <!-- أداة النسخ الاحتياطي والتحكم بالبيانات (تم تصليح زر الاستعادة) -->
+        <!-- أداة النسخ الاحتياطي بالملفات النصية (.txt) المتوافقة مع الموبايل -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row justify-between items-center gap-3">
-            <span class="text-xs text-slate-300 font-semibold">إدارة البيانات والنسخ الاحتياطي:</span>
+            <span class="text-xs text-slate-300 font-semibold">النسخ الاحتياطي عبر الملفات:</span>
             
-            <!-- عنصر إدخال الملفات المخفي -->
-            <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
+            <!-- حقل إدخال مخفي يقبل أي ملف نصي -->
+            <input type="file" id="importFile" accept=".txt, .json" onchange="importData(event)" class="hidden">
 
             <div class="flex gap-2 w-full sm:w-auto">
                 <button onclick="exportData()" class="flex-1 sm:flex-none bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-emerald-500 transition">
-                    تصدير النسخة (Backup) 📥
+                    تحميل ملف النسخة (Backup) 📥
                 </button>
                 <button onclick="triggerImport()" class="flex-1 sm:flex-none bg-amber-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-amber-500 transition">
-                    استعادة (Restore) 📤
+                    استعادة من ملف (Restore) 📤
                 </button>
             </div>
         </div>
@@ -112,10 +112,10 @@
 
     <!-- الفوتر -->
     <footer class="bg-slate-800 border-t border-slate-700 py-4 text-center text-xs text-slate-500">
-        جميع المهام والتصنيفات تُحفظ محلياً وتدعم التصدير والاستيراد الآمن.
+        نسخ احتياطي احترافي عبر ملفات نصية (.txt) قابلة للاختيار بسهولة تامة.
     </footer>
 
-    <!-- سكريبت إدارة المهام والتصدير والاستيراد المُحسّن -->
+    <!-- سكريبت إدارة المهام والملفات -->
     <script>
         let tasks = [];
         let currentFilter = 'all';
@@ -181,27 +181,27 @@
             renderTasks();
         }
 
-        // ميزة تصدير البيانات كملف JSON
+        // تصدير البيانات كملف نصي (.txt) متاح للضغط عليه في كل الهواتف
         function exportData() {
             if (tasks.length === 0) {
                 alert('لا توجد مهام لتصديرها!');
                 return;
             }
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+            const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "my_tasks_backup.json");
+            downloadAnchor.setAttribute("download", "my_tasks_backup.txt");
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
 
-        // تفعيل نافذة استعراض الملفات برمجياً عند الضغط على زر الاستعادة
+        // فتح نافذة اختيار الملفات
         function triggerImport() {
             document.getElementById('importFile').click();
         }
 
-        // ميزة استيراد البيانات من ملف JSON
+        // استعادة البيانات من الملف النصي المختار
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -213,14 +213,13 @@
                     if (Array.isArray(importedTasks)) {
                         tasks = importedTasks;
                         saveAndRender();
-                        alert('تم استعادة البيانات والمهام بنجاح! 🎉');
+                        alert('تم استعادة البيانات والمهام بنجاح من الملف! 🎉');
                     } else {
-                        alert('ملف النسخة الاحتياطية غير صالح!');
+                        alert('محتوى الملف غير صالح!');
                     }
                 } catch (err) {
-                    alert('حدث خطأ أثناء قراءة الملف!');
+                    alert('حدث خطأ أثناء قراءة الملف، تأكد أنه ملف نسخة احتياطية صحيح.');
                 }
-                // إعادة تعيين حقل الملف لكي يعمل حتى لو تم اختيار نفس الملف مرة أخرى
                 event.target.value = '';
             };
             reader.readAsText(file);
