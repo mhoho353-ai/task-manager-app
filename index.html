@@ -73,17 +73,20 @@
             </div>
         </div>
 
-        <!-- أداة النسخ الاحتياطي والتحكم بالبيانات -->
+        <!-- أداة النسخ الاحتياطي والتحكم بالبيانات (تم تصليح زر الاستعادة) -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row justify-between items-center gap-3">
             <span class="text-xs text-slate-300 font-semibold">إدارة البيانات والنسخ الاحتياطي:</span>
+            
+            <!-- عنصر إدخال الملفات المخفي -->
+            <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
+
             <div class="flex gap-2 w-full sm:w-auto">
                 <button onclick="exportData()" class="flex-1 sm:flex-none bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-emerald-500 transition">
                     تصدير النسخة (Backup) 📥
                 </button>
-                <label class="flex-1 sm:flex-none bg-amber-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-amber-500 transition cursor-pointer text-center">
+                <button onclick="triggerImport()" class="flex-1 sm:flex-none bg-amber-600 text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-amber-500 transition">
                     استعادة (Restore) 📤
-                    <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
-                </label>
+                </button>
             </div>
         </div>
 
@@ -112,7 +115,7 @@
         جميع المهام والتصنيفات تُحفظ محلياً وتدعم التصدير والاستيراد الآمن.
     </footer>
 
-    <!-- سكريبت إدارة المهام والتصدير والترتيب -->
+    <!-- سكريبت إدارة المهام والتصدير والاستيراد المُحسّن -->
     <script>
         let tasks = [];
         let currentFilter = 'all';
@@ -193,6 +196,11 @@
             downloadAnchor.remove();
         }
 
+        // تفعيل نافذة استعراض الملفات برمجياً عند الضغط على زر الاستعادة
+        function triggerImport() {
+            document.getElementById('importFile').click();
+        }
+
         // ميزة استيراد البيانات من ملف JSON
         function importData(event) {
             const file = event.target.files[0];
@@ -207,11 +215,13 @@
                         saveAndRender();
                         alert('تم استعادة البيانات والمهام بنجاح! 🎉');
                     } else {
-                        alert('ملف غير صالح!');
+                        alert('ملف النسخة الاحتياطية غير صالح!');
                     }
                 } catch (err) {
                     alert('حدث خطأ أثناء قراءة الملف!');
                 }
+                // إعادة تعيين حقل الملف لكي يعمل حتى لو تم اختيار نفس الملف مرة أخرى
+                event.target.value = '';
             };
             reader.readAsText(file);
         }
