@@ -3,327 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدير المهام السحابي الاحترافي</title>
-    <meta name="description" content="تطبيق ويب سحابي لإدارة المهام والمشاريع مع مزامنة فورية وقاعدة بيانات Supabase.">
-    
-    <!-- تحميل مكتبة Supabase للاتصال السحابي -->
+    <title>مدير المهام السحابي مع المصادقة</title>
+    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- تحميل Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; }
+        body { font-family: Tahoma, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; box-sizing: border-box; font-size: 16px; }
+        input { background: #334155; color: white; }
+        button { background: #6366f1; color: white; cursor: pointer; font-weight: bold; }
+        button:hover { background: #4f46e5; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .task-item { background: #334155; padding: 10px; margin-top: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+<body>
 
-    <!-- الهيدر -->
-    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 text-center">
-        <h1 class="text-2xl font-bold text-indigo-400">مدير المهام السحابي ☁️📋</h1>
-        <p class="text-xs text-slate-400 mt-1">متصل مباشرة بقاعدة البيانات السحابية (Supabase)</p>
-    </header>
+    <div class="container">
+        <!-- قسم تسجيل الدخول (يظهر للمستخدم غير المسجل) -->
+        <div id="auth-container">
+            <h2 style="text-align: center;">تسجيل الدخول للنظام 🔐</h2>
+            <input type="email" id="auth-email" placeholder="البريد الإلكتروني">
+            <input type="password" id="auth-password" placeholder="كلمة المرور">
+            <div style="display: flex; gap: 10px;">
+                <button onclick="handleLogin()">دخول</button>
+                <button onclick="handleSignup()" class="btn-success">حساب جديد</button>
+            </div>
+        </div>
 
+        <!-- تطبيق المهام الأساسي (مخفي ولا يظهر إلا بعد تسجيل الدخول) -->
+        <div id="app-container" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #475569; padding-bottom: 10px;">
+                <span id="user-email-display" style="font-size: 14px; color: #cbd5e1;"></span>
+                <button onclick="handleLogout()" class="btn-danger" style="width: auto; padding: 6px 12px; margin: 0;">تسجيل خروج</button>
+            </div>
 
+            <h3>إضافة مهمة سحابية جديدة 📋</h3>
+            <input type="text" id="task-input" placeholder="اكتب عنوان المهمة...">
+            <button onclick="addTask()" class="btn-success">حفظ المهمة</button>
 
-
-
-    <body>
-
-    <!-- قسم تسجيل الدخول (يظهر للمستخدم غير المسجل) -->
-    <div id="auth-container" style="max-width: 400px; margin: 50px auto; padding: 20px; background: #1e1e1e; border-radius: 10px; color: white; text-align: center;">
-        <h2>تسجيل الدخول للنظام 🔐</h2>
-        <input type="email" id="auth-email" placeholder="البريد الإلكتروني" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box;">
-        <input type="password" id="auth-password" placeholder="كلمة المرور" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box;">
-        <div style="display: flex; gap: 10px;">
-            <button onclick="handleLogin()" style="flex: 1; padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 5px; cursor: pointer;">دخول</button>
-            <button onclick="handleSignup()" style="flex: 1; padding: 10px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer;">حساب جديد</button>
+            <h3 style="margin-top: 20px;">المهام السحابية:</h3>
+            <div id="tasks-list">جاري تحميل المهام...</div>
         </div>
     </div>
 
-    <!-- تطبيق المهام الأساسي (مخفي افتراضياً ولا يظهر إلا بعد تسجيل الدخول) -->
-    <div id="app-container" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #2d2d2d; color: white;">
-            <span id="user-email-display"></span>
-            <button onclick="handleLogout()" style="padding: 5px 15px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer;">تسجيل خروج</button>
-        </div>
-        
-        <!-- هنا تضع باقي تصميم تطبيق المهام القديم الخاص بك (إضافة المهام وعرضها) -->
-    </div>
-
-...
-
-
-        
-
-    <!-- المحتوى الرئيسي -->
-    <main class="max-w-xl mx-auto p-4 sm:p-6 w-full flex-grow space-y-6">
-        
-        <!-- صندوق إضافة مهمة جديدة -->
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 space-y-4 shadow-lg">
-            <h2 class="font-bold text-sm text-indigo-300">إضافة مهمة سحابية جديدة</h2>
-            <div class="space-y-3">
-                <input type="text" id="taskInput" placeholder="اكتب عنوان المهمة..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">التصنيف:</label>
-                        <select id="taskCategory" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none">
-                            <option value="عمل">عمل 💼</option>
-                            <option value="شخصي">شخصي 🏠</option>
-                            <option value="دراسة">دراسة 📚</option>
-                            <option value="برمجة">برمجة 💻</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">الأولوية:</label>
-                        <select id="taskPriority" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none">
-                            <option value="عالية">عالية (مهم عاجل) 🔴</option>
-                            <option value="متوسطة" selected>متوسطة 🟡</option>
-                            <option value="منخفضة">منخفضة 🟢</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button onclick="addTask()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl hover:bg-indigo-500 transition text-sm shadow-md">
-                    إضافة للسحابة ☁️➕
-                </button>
-            </div>
-        </div>
-
-        <!-- قائمة المهام والفلترة -->
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-slate-700 pb-3">
-                <h3 class="font-bold text-sm text-slate-300">المهام السحابية (<span id="taskCount">0</span>)</h3>
-                
-                <!-- أزرار الفلترة -->
-                <div class="flex gap-1 bg-slate-900 p-1 rounded-xl text-xs">
-                    <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white transition">الكل</button>
-                    <button onclick="setFilter('active')" id="filter-active" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">قيد التنفيذ</button>
-                    <button onclick="setFilter('completed')" id="filter-completed" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">المكتملة</button>
-                </div>
-            </div>
-
-            <div id="taskList" class="space-y-3 max-h-96 overflow-y-auto">
-                <!-- ستظهر المهام هنا برمجياً من السحابة -->
-                <p id="loadingMsg" class="text-center text-xs text-slate-400 py-6">جاري الاتصال بالسحابة وجلب المهام... ⏳</p>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- الفوتر -->
-    <footer class="bg-slate-800 border-t border-slate-700 py-4 text-center text-xs text-slate-500">
-        بياناتك محمية ومخزنة سحابياً عبر قاعدة بيانات Supabase.
-    </footer>
-
-    <!-- سكريبت الاتصال السحابي وإدارة المهام -->
     <script>
-        // ----------------------------------------------------
-        // ضع بيانات مشروعك السحابي هنا بداخل علامات التنصيص:
+        // ⚠️ استبدل البيانات التالية ببيانات مشروعك الحقيقية من Supabase
         const SUPABASE_URL = 'https://nndcnilwosxpqbodfpcj.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZGNuaWx3b3N4cHFib2RmcGNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzYwOTMsImV4cCI6MjEwNzk1MjA5M30.oDzj6K6Nz8FVIYolYJd5ExuJD4TV4ovVQQrIJ6M3L1s';
-        // ----------------------------------------------------
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // تهيئة اتصال Supabase
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let tasks = [];
-        let currentFilter = 'all';
-
-        // تحميل المهام من السحابة فور فتح الصفحة
-        window.onload = function() {
-            fetchTasksFromCloud();
-        };
-
-        // جلب المهام من قاعدة البيانات السحابية
-        async function fetchTasksFromCloud() {
-            const { data, error } = await _supabase
-                .from('tasks')
-                .select('*')
-                .order('inserted_at', { ascending: false });
-
+        // 1. إنشاء حساب جديد
+        async function handleSignup() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            
+            const { data, error } = await supabase.auth.signUp({ email, password });
             if (error) {
-                console.error('خطأ في جلب البيانات:', error.message);
-                document.getElementById('taskList').innerHTML = '<p class="text-center text-xs text-red-400 py-6">فشل الاتصال بالسحابة! تأكد من صحة الرابط والمفتاح.</p>';
-                return;
+                alert('خطأ في التسجيل: ' + error.message);
+            } else {
+                alert('تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن.');
             }
-
-            tasks = data || [];
-            renderTasks();
         }
 
-        // إضافة مهمة جديدة مباشرة إلى السحابة
-        async function addTask() {
-            const input = document.getElementById('taskInput');
-            const category = document.getElementById('taskCategory').value;
-            const priority = document.getElementById('taskPriority').value;
-            const text = input.value.trim();
+        // 2. تسجيل الدخول
+        async function handleLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert('فشل الدخول: ' + error.message);
+            } else {
+                checkUserSession();
+            }
+        }
 
-            if (!text) {
-                alert('الرجاء كتابة تفاصيل المهمة أولاً!');
+        // 3. تسجيل الخروج
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            location.reload();
+        }
+
+        // 4. التحقق من الجلسة وتغيير الواجهة
+        async function checkUserSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('app-container').style.display = 'block';
+                document.getElementById('user-email-display').innerText = session.user.email;
+                loadTasks();
+            } else {
+                document.getElementById('auth-container').style.display = 'block';
+                document.getElementById('app-container').style.display = 'none';
+            }
+        }
+
+        // 5. جلب المهام من السحابة
+        async function loadTasks() {
+            const { data, error } = await supabase.from('tasks').select('*').order('id', { ascending: false });
+            const listDiv = document.getElementById('tasks-list');
+            
+            if (error) {
+                listDiv.innerHTML = 'خطأ في جلب المهام: ' + error.message;
                 return;
             }
 
-            const { data, error } = await _supabase
-                .from('tasks')
-                .insert([{ text, category, priority, completed: false }])
-                .select();
+            if (data.length === 0) {
+                listDiv.innerHTML = '<p style="color: #94a3b8; text-align: center;">لا توجد مهام سحابية حالياً.</p>';
+                return;
+            }
 
+            listDiv.innerHTML = '';
+            data.forEach(task => {
+                listDiv.innerHTML += `
+                    <div class="task-item">
+                        <span>${task.text}</span>
+                        <button onclick="deleteTask(${task.id})" class="btn-danger" style="width: auto; padding: 4px 8px; margin:0; font-size: 12px;">حذف</button>
+                    </div>
+                `;
+            });
+        }
+
+        // 6. إضافة مهمة جديدة للسحابة
+        async function addTask() {
+            const textInput = document.getElementById('task-input');
+            const text = textInput.value.trim();
+            if (!text) return alert('الرجاء كتابة نص المهمة!');
+
+            // جلب المستخدم الحالي لإرفاق الـ ID الخاص به مع المهمة مستقبلاً
+            const { data: { session } } = await supabase.auth.getSession();
+
+            const { error } = await supabase.from('tasks').insert([{ text: text }]);
+            
             if (error) {
                 alert('فشل حفظ المهمة في السحابة: ' + error.message);
-                return;
+            } else {
+                textInput.value = '';
+                loadTasks();
             }
-
-            input.value = '';
-            fetchTasksFromCloud(); // إعادة تحميل القائمة من السحابة لتحديث العرض
         }
 
-        // تغيير حالة المهمة (مكتملة أو قيد التنفيذ) في السحابة
-        async function toggleTask(id, currentStatus) {
-            const { error } = await _supabase
-                .from('tasks')
-                .update({ completed: !currentStatus })
-                .eq('id', id);
-
-            if (error) {
-                alert('حدث خطأ أثناء التحديث!');
-                return;
-            }
-            fetchTasksFromCloud();
-        }
-
-        // حذف مهمة من السحابة
+        // 7. حذف مهمة
         async function deleteTask(id) {
-            const { error } = await _supabase
-                .from('tasks')
-                .delete()
-                .eq('id', id);
-
+            const { error } = await supabase.from('tasks').delete().eq('id', id);
             if (error) {
-                alert('حدث خطأ أثناء الحذف!');
-                return;
+                alert('خطأ في الحذف: ' + error.message);
+            } else {
+                loadTasks();
             }
-            fetchTasksFromCloud();
         }
 
-        function setFilter(filter) {
-            currentFilter = filter;
-            document.querySelectorAll('button[id^="filter-"]').forEach(btn => {
-                btn.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition";
-            });
-            document.getElementById(`filter-${filter}`).className = "px-3 py-1.5 rounded-lg bg-indigo-600 text-white transition";
-            renderTasks();
-        }
-
-        function renderTasks() {
-            const taskList = document.getElementById('taskList');
-            const taskCount = document.getElementById('taskCount');
-
-            let filteredTasks = tasks;
-            if (currentFilter === 'active') {
-                filteredTasks = tasks.filter(t => !t.completed);
-            } else if (currentFilter === 'completed') {
-                filteredTasks = tasks.filter(t => t.completed);
-            }
-
-            taskCount.textContent = filteredTasks.length;
-            taskList.innerHTML = '';
-
-            if (filteredTasks.length === 0) {
-                taskList.innerHTML = '<p class="text-center text-xs text-slate-500 py-8">لا توجد مهام سحابية مطابقة للعرض حالياً.</p>';
-                return;
-            }
-
-            filteredTasks.forEach(task => {
-                let priorityColor = "bg-yellow-950 text-yellow-300 border-yellow-800";
-                if (task.priority === 'عالية') priorityColor = "bg-red-950 text-red-300 border-red-800";
-                if (task.priority === 'منخفضة') priorityColor = "bg-emerald-950 text-emerald-300 border-emerald-800";
-
-                const div = document.createElement('div');
-                div.className = `p-3.5 bg-slate-900 border border-slate-700 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition ${task.completed ? 'opacity-50' : ''}`;
-                
-                div.innerHTML = `
-                    <div class="flex items-start gap-3 overflow-hidden w-full">
-                        <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id}, ${task.completed})" class="mt-1 w-4 h-4 accent-indigo-500 cursor-pointer">
-                        <div class="space-y-1 w-full">
-                            <span class="text-sm text-slate-100 block break-words ${task.completed ? 'line-through text-slate-500' : ''}">${task.text}</span>
-                            <div class="flex gap-2 text-[10px]">
-                                <span class="bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-md border border-indigo-800">${task.category}</span>
-                                <span class="${priorityColor} px-2 py-0.5 rounded-md border">${task.priority}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <button onclick="deleteTask(${task.id})" class="text-red-400 hover:text-red-300 text-xs px-2.5 py-1.5 bg-red-950/40 rounded-lg transition self-end sm:self-center">حذف 🗑️</button>
-                `;
-                taskList.appendChild(div);
-            });
-        }
-
-
-        <script>
-    // إعدادات الاتصال السحابي (التي قمت بضبطها مسبقاً)
-    const SUPABASE_URL = 'https://nndcnilwosxpqbodfpcj.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZGNuaWx3b3N4cHFib2RmcGNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzYwOTMsImV4cCI6MjEwNzk1MjA5M30.oDzj6K6Nz8FVIYolYJd5ExuJD4TV4ovVQQrIJ6M3L1s';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // 1. إنشاء حساب جديد
-    async function handleSignup() {
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
-        
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-            alert('خطأ في التسجيل: ' + error.message);
-        } else {
-            alert('تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن مباشرة.');
-        }
-    }
-
-    // 2. تسجيل الدخول
-    async function handleLogin() {
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
-        
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            alert('فشل الدخول: ' + error.message);
-        } else {
-            checkUserSession();
-        }
-    }
-
-    // 3. تسجيل الخروج
-    async function handleLogout() {
-        await supabase.auth.signOut();
-        location.reload(); // إعادة تحميل الصفحة لإظهار شاشة الدخول
-    }
-
-    // 4. التحقق من حالة المستخدم عند فتح التطبيق
-    async function checkUserSession() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            // المستخدم مسجل دخول
-            document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
-            document.getElementById('user-email-display').innerText = `مرحباً: ${session.user.email}`;
-            
-            // استدعاء دالة جلب المهام لاحقاً
-            if (typeof loadTasks === 'function') loadTasks(); 
-        } else {
-            // المستخدم غير مسجل
-            document.getElementById('auth-container').style.display = 'block';
-            document.getElementById('app-container').style.display = 'none';
-        }
-    }
-
-    // تشغيل الفحص أول ما الصفحة تفتح
-    checkUserSession();
-</script>
-
-
-
-        
+        // فحص الجلسة فور فتح الصفحة
+        checkUserSession();
     </script>
 </body>
 </html>
