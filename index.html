@@ -55,6 +55,13 @@
         const SUPABASE_URL = 'https://nndcnilwosxpqbodfpcj.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZGNuaWx3b3N4cHFib2RmcGNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzYwOTMsImV4cCI6MjEwNzk1MjA5M30.oDzj6K6Nz8FVIYolYJd5ExuJD4TV4ovVQQrIJ6M3L1s';
         
+        // التحقق من تحميل مكتبة Supabase
+        if (window.supabase) {
+            console.log("مكتبة Supabase تعمل بنجاح");
+        } else {
+            console.error("فشل تحميل مكتبة Supabase!");
+        }
+
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 1. إنشاء حساب جديد
@@ -62,10 +69,19 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             
+            if (!email || !password) {
+                alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور');
+                return;
+            }
+
+            console.log("جاري إنشاء الحساب...");
             const { data, error } = await supabase.auth.signUp({ email, password });
+            
             if (error) {
+                console.error("خطأ تسجيل:", error);
                 alert('خطأ في التسجيل: ' + error.message);
             } else {
+                console.log("نتيجة التسجيل:", data);
                 alert('تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن.');
             }
         }
@@ -75,10 +91,19 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             
+            if (!email || !password) {
+                alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور');
+                return;
+            }
+
+            console.log("جاري تسجيل الدخول...");
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            
             if (error) {
+                console.error("خطأ دخول:", error);
                 alert('فشل الدخول: ' + error.message);
             } else {
+                console.log("تم الدخول بنجاح:", data);
                 checkUserSession();
             }
         }
@@ -134,9 +159,6 @@
             const textInput = document.getElementById('task-input');
             const text = textInput.value.trim();
             if (!text) return alert('الرجاء كتابة نص المهمة!');
-
-            // جلب المستخدم الحالي لإرفاق الـ ID الخاص به مع المهمة مستقبلاً
-            const { data: { session } } = await supabase.auth.getSession();
 
             const { error } = await supabase.from('tasks').insert([{ text: text }]);
             
