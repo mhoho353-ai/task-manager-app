@@ -23,6 +23,38 @@
         <p class="text-xs text-slate-400 mt-1">متصل مباشرة بقاعدة البيانات السحابية (Supabase)</p>
     </header>
 
+
+
+
+
+    <body>
+
+    <!-- قسم تسجيل الدخول (يظهر للمستخدم غير المسجل) -->
+    <div id="auth-container" style="max-width: 400px; margin: 50px auto; padding: 20px; background: #1e1e1e; border-radius: 10px; color: white; text-align: center;">
+        <h2>تسجيل الدخول للنظام 🔐</h2>
+        <input type="email" id="auth-email" placeholder="البريد الإلكتروني" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box;">
+        <input type="password" id="auth-password" placeholder="كلمة المرور" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box;">
+        <div style="display: flex; gap: 10px;">
+            <button onclick="handleLogin()" style="flex: 1; padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 5px; cursor: pointer;">دخول</button>
+            <button onclick="handleSignup()" style="flex: 1; padding: 10px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer;">حساب جديد</button>
+        </div>
+    </div>
+
+    <!-- تطبيق المهام الأساسي (مخفي افتراضياً ولا يظهر إلا بعد تسجيل الدخول) -->
+    <div id="app-container" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #2d2d2d; color: white;">
+            <span id="user-email-display"></span>
+            <button onclick="handleLogout()" style="padding: 5px 15px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer;">تسجيل خروج</button>
+        </div>
+        
+        <!-- هنا تضع باقي تصميم تطبيق المهام القديم الخاص بك (إضافة المهام وعرضها) -->
+    </div>
+
+...
+
+
+        
+
     <!-- المحتوى الرئيسي -->
     <main class="max-w-xl mx-auto p-4 sm:p-6 w-full flex-grow space-y-6">
         
@@ -227,6 +259,71 @@
                 taskList.appendChild(div);
             });
         }
+
+
+        <script>
+    // إعدادات الاتصال السحابي (التي قمت بضبطها مسبقاً)
+    const SUPABASE_URL = 'https://nndcnilwosxpqbodfpcj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZGNuaWx3b3N4cHFib2RmcGNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzYwOTMsImV4cCI6MjEwNzk1MjA5M30.oDzj6K6Nz8FVIYolYJd5ExuJD4TV4ovVQQrIJ6M3L1s';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 1. إنشاء حساب جديد
+    async function handleSignup() {
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+            alert('خطأ في التسجيل: ' + error.message);
+        } else {
+            alert('تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن مباشرة.');
+        }
+    }
+
+    // 2. تسجيل الدخول
+    async function handleLogin() {
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+            alert('فشل الدخول: ' + error.message);
+        } else {
+            checkUserSession();
+        }
+    }
+
+    // 3. تسجيل الخروج
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        location.reload(); // إعادة تحميل الصفحة لإظهار شاشة الدخول
+    }
+
+    // 4. التحقق من حالة المستخدم عند فتح التطبيق
+    async function checkUserSession() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            // المستخدم مسجل دخول
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            document.getElementById('user-email-display').innerText = `مرحباً: ${session.user.email}`;
+            
+            // استدعاء دالة جلب المهام لاحقاً
+            if (typeof loadTasks === 'function') loadTasks(); 
+        } else {
+            // المستخدم غير مسجل
+            document.getElementById('auth-container').style.display = 'block';
+            document.getElementById('app-container').style.display = 'none';
+        }
+    }
+
+    // تشغيل الفحص أول ما الصفحة تفتح
+    checkUserSession();
+</script>
+
+
+
+        
     </script>
 </body>
 </html>
